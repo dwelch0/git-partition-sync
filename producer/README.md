@@ -43,3 +43,5 @@ Uploaded keys are base64 encoded. Decoded, the key is a json string with followi
 }
 ```
 **Note:** the values within each json will mirror values for each `destination` defined within config file (exluding `commit_sha` which is the latest commit pulled from `source`)
+
+**Note:** only the latest version for a repository will be stored within s3. If `producer` detects a newer commit on a target repository, once that new version is uploaded, the old object will be deleted from the bucket. Additionally, if a project is removed entirely from the config file, `producer` will delete the object upon next execution.
