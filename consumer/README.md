@@ -18,8 +18,9 @@ Utility for pulling git archives from s3 and pushing to remote. Reliant on S3 ob
 * WORKDIR - local directory where io operations will be performed. defaults to `/working`
 
 ## Execute
+Ensure outputted operations are desired:
 ```
-podman run -t \
+docker run -t \
     -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
     -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
     -e AWS_REGION="$AWS_REGION" \
@@ -30,3 +31,4 @@ podman run -t \
     -e PRIVATE_KEY="$PRIVATE_KEY" \
     quay.io/app-sre/git-partition-sync-consumer:latest -dry-run
 ```
+If operations look correct, run again without `-dry-run`
