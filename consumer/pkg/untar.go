@@ -122,7 +122,6 @@ func (d *Downloader) extractGitRemote(a *UntarInfo, encodedKey string) error {
 		return err
 	}
 
-	// unmarshal decoded key (json) into struct defined by gitlab-sync-s3-push
 	var jsonKey pushPkg.DecodedKey
 	err = json.Unmarshal(decodedBytes, &jsonKey)
 	if err != nil {
