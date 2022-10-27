@@ -1,0 +1,114 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: gitlab-sync-s3-push
+objects:
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: gitlab-sync-s3-push
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: gitlab-sync-s3-push
+    annotations:
+      ignore-check.kube-linter.io/minimum-three-replicas: "gitlab-sync-s3-push design does not adequately account for multiple replicas"
+      ignore-check.kube-linter.io/no-readiness-probe: "gitlab-sync-s3-push does not receive traffic"
+      ignore-check.kube-linter.io/no-liveness-probe: "TODO: https://issues.redhat.com/browse/APPSRE-5919"
+    name: gitlab-sync-s3-push
+  spec:
+    replicas: ${{REPLICAS}}
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 0
+        maxSurge: 1
+    selector:
+      matchLabels:
+        app: gitlab-sync-s3-push
+    template:
+      metadata:
+        labels:
+          app: gitlab-sync-s3-push
+      spec:
+        serviceAccountName: gitlab-sync-s3-push
+        volumes:
+        - name: private-gpg-key
+          secret:
+            secretName: private-gpg-key
+        containers:
+        - image: ${IMAGE}:${IMAGE_TAG}
+          imagePullPolicy: Always
+          name: gitlab-sync-s3-push
+          env:
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                key: aws.access.key.id
+                name: ${VAULT_SECRET_NAME}
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                key: aws.secret.access.key
+                name: ${VAULT_SECRET_NAME}
+          - name: AWS_REGION
+            valueFrom:
+              secretKeyRef:
+                key: aws.region
+                name: ${VAULT_SECRET_NAME}
+          - name: AWS_S3_BUCKET
+            valueFrom:
+              secretKeyRef:
+                key: aws.s3.bucket
+                name: ${VAULT_SECRET_NAME}
+          - name: GITLAB_BASE_URL
+            valueFrom:
+              secretKeyRef:
+                key: gitlab.url
+                name: ${VAULT_SECRET_NAME}
+          - name: GITLAB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                key: gitlab.username
+                name: ${VAULT_SECRET_NAME}
+          - name: GITLAB_TOKEN
+            valueFrom:
+              secretKeyRef:
+                key: gitlab.token
+                name: ${VAULT_SECRET_NAME}
+          - name: PUBLIC_KEY
+            valueFrom:
+              secretKeyRef:
+                key: public-key
+                name: ${VAULT_SECRET_NAME}
+          resources:
+            requests:
+              memory: ${MEMORY_REQUESTS}
+              cpu: ${CPU_REQUESTS}
+            limits:
+              memory: ${MEMORY_LIMIT}
+              cpu: ${CPU_LIMIT}
+parameters:
+- name: IMAGE
+  value: quay.io/app-sre/gitlab-sync-s3-push
+  displayName: gitlab-sync-s3-push image
+  description: gitlab-sync-s3-push docker image. Defaults to quay.io/app-sre/gitlab-sync-s3-push
+- name: IMAGE_TAG
+  value: latest
+  displayName: gitlab-sync-s3-push version
+  description: gitlab-sync-s3-push version which defaults to latest
+- name: PRIVATE_GPG_PATH
+  value: /private.gpg
+- name: REQUEST_TIMEOUT
+  value: 60
+- name: MEMORY_REQUESTS
+  value: 200Mi
+- name: MEMORY_LIMIT
+  value: 200Mi
+- name: CPU_REQUESTS
+  value: 100m
+- name: CPU_LIMIT
+  value: 150m
+- name: VAULT_SECRET_NAME
+  value: gitlab-sync-s3-push
