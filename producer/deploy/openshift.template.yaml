@@ -1,22 +1,22 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: gitlab-sync-s3-push
+  name: git-partition-sync-producer
 objects:
 - apiVersion: v1
   kind: ServiceAccount
   metadata:
-    name: gitlab-sync-s3-push
+    name: git-partition-sync-producer
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
     labels:
-      app: gitlab-sync-s3-push
+      app: git-partition-sync-producer
     annotations:
-      ignore-check.kube-linter.io/minimum-three-replicas: "gitlab-sync-s3-push design does not adequately account for multiple replicas"
-      ignore-check.kube-linter.io/no-readiness-probe: "gitlab-sync-s3-push does not receive traffic"
+      ignore-check.kube-linter.io/minimum-three-replicas: "git-partition-sync-producer design does not adequately account for multiple replicas"
+      ignore-check.kube-linter.io/no-readiness-probe: "git-partition-sync-producer does not receive traffic"
       ignore-check.kube-linter.io/no-liveness-probe: "TODO: https://issues.redhat.com/browse/APPSRE-5919"
-    name: gitlab-sync-s3-push
+    name: git-partition-sync-producer
   spec:
     replicas: ${{REPLICAS}}
     strategy:
@@ -26,13 +26,13 @@ objects:
         maxSurge: 1
     selector:
       matchLabels:
-        app: gitlab-sync-s3-push
+        app: git-partition-sync-producer
     template:
       metadata:
         labels:
-          app: gitlab-sync-s3-push
+          app: git-partition-sync-producer
       spec:
-        serviceAccountName: gitlab-sync-s3-push
+        serviceAccountName: git-partition-sync-producer
         volumes:
         - name: private-gpg-key
           secret:
@@ -40,7 +40,7 @@ objects:
         containers:
         - image: ${IMAGE}:${IMAGE_TAG}
           imagePullPolicy: Always
-          name: gitlab-sync-s3-push
+          name: git-partition-sync-producer
           env:
           - name: AWS_ACCESS_KEY_ID
             valueFrom:
@@ -91,13 +91,13 @@ objects:
               cpu: ${CPU_LIMIT}
 parameters:
 - name: IMAGE
-  value: quay.io/app-sre/gitlab-sync-s3-push
-  displayName: gitlab-sync-s3-push image
-  description: gitlab-sync-s3-push docker image. Defaults to quay.io/app-sre/gitlab-sync-s3-push
+  value: quay.io/app-sre/git-partition-sync-producer
+  displayName: git-partition-sync-producer image
+  description: git-partition-sync-producer docker image. Defaults to quay.io/app-sre/git-partition-sync-producer
 - name: IMAGE_TAG
   value: latest
-  displayName: gitlab-sync-s3-push version
-  description: gitlab-sync-s3-push version which defaults to latest
+  displayName: git-partition-sync-producer version
+  description: git-partition-sync-producer version which defaults to latest
 - name: PRIVATE_GPG_PATH
   value: /private.gpg
 - name: REQUEST_TIMEOUT
@@ -111,4 +111,4 @@ parameters:
 - name: CPU_LIMIT
   value: 150m
 - name: VAULT_SECRET_NAME
-  value: gitlab-sync-s3-push
+  value: git-partition-sync-producer

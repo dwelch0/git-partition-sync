@@ -7,7 +7,6 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.17.1
 	github.com/aws/aws-sdk-go-v2/credentials v1.12.23
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.29.1
-	github.com/dwelch0/gitlab-sync-s3-push v0.0.1
 	github.com/xanzy/go-gitlab v0.73.1
 	gopkg.in/yaml.v3 v3.0.1
 )
